@@ -11,12 +11,17 @@ ui <- fluidPage(
   dashboardSidebar(),
   dashboardBody(
     tags$style(HTML("
+    
+.container-cards {
+    display: flex;
+    justify-content: center;
+}
 .card-body {
 margin: auto;
 max-width: 800px;
 }
 .content-wrapper {
-background-color: white;
+background-color: red;
 margin: 10px;
 border: 1px solid black;
 border-radius: 5px;
@@ -86,12 +91,60 @@ server <- function(input, output) {
                # Muestra las métricas del post en tarjetas
                tags$div(class = "content-wrapper",
                         box(title = paste0("", fecha_filtrada$message[i]), class = "message-title",
-                            tags$div(class = "row metric metric-alcance",
-                                     tags$div(class = "col-sm-4",
-                                              tags$h4("Alcance"),
-                                              tags$h2(format(fecha_filtrada$post_impressions_unique[i], big.mark = ","))
+                            
+                            tags$div(class = "container container-cards text-center",
+                                     tags$div(class = "row",
+                                              tags$div(class = "col",
+                                                       tags$div(class = "card text-white bg-primary mb-3",
+                                                                tags$div(class = "card-header",tags$h4("Alcance")),
+                                                                tags$div(class = "card-body",
+                                                                         tags$h2(class = "card-text", format(fecha_filtrada$post_impressions_unique[i], big.mark = ","))
+                                                                ),
+                                                       ),
+                                                       
+                                              ),
+                                              
+                                              tags$div(class = "col",
+                                                       tags$div(class = "card text-white bg-primary mb-3",
+                                                                tags$div(class = "card-header",tags$h4("Alcance")),
+                                                                tags$div(class = "card-body",
+                                                                         tags$h2(class = "card-text", format(fecha_filtrada$post_impressions_unique[i], big.mark = ","))
+                                                                ),
+                                                       ),
+                                                       
+                                              )
+                                              
                                      )
+                                     
                             ),
+                            
+                            
+                            tags$div(class = "card text-white bg-primary mb-3",
+                                     tags$div(class = "card-header",tags$h4("Alcance")),
+                                     tags$div(class = "card-body",
+                                        tags$h2(class = "card-text", format(fecha_filtrada$post_impressions_unique[i], big.mark = ","))
+                                     ),
+                            ),
+                            
+                            tags$div(class = "card text-white bg-primary mb-3",
+                                     tags$div(class = "card-header",tags$h4("Alcance")),
+                                     tags$div(class = "card-body",
+                                              tags$h2(class = "card-text", format(fecha_filtrada$post_impressions_unique[i], big.mark = ","))
+                                     ),
+                            ),
+                            
+                            
+                       #     tags$div(class = "card text-white bg-primary mb-3",
+                      #               
+                       #              tags$div(class = "card-header",tags$h4("Alcance")),
+                        #             
+                        #             tags$div(class = "card-body",(
+                         #              tags$div(class = "card-title",tags$h4("Alcance"))
+                          #             tags$h2(format(fecha_filtrada$post_impressions_unique[i], big.mark = ","))
+                           #          )
+                            #         )
+                            #),
+                            
                             tags$div(class = "row metric metric-impresiones",
                                      tags$div(class = "col-sm-4",
                                               tags$h4("Impresiones"),
