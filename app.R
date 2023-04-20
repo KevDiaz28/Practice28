@@ -1,133 +1,114 @@
-library(shiny)
 library(shinydashboard)
-library(shinyWidgets)
-
-library(shiny)
 library(dplyr)
+library(shiny)
+library(slickR)
 
-# UI de la aplicación
 ui <- fluidPage(
-  dashboardHeader(title = "Dashboard de post"),
-  dashboardSidebar(),
-  dashboardBody(
-    tags$style(HTML("
-.card-body {
-margin: auto;
-max-width: 800px;
+  # Add a title to the page
+  titlePanel("Carousel of Images"),
+
+  # Create the date range input widget
+  dateRangeInput("date", "Select a date range"),
+
+  # Create the carousel
+  slickROutput("myCarousel", width = "100%", height = "500px"),
+
+  # Add CSS styles
+  tags$style(HTML('
+.image-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 2px 2px 5px #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  text-align: center;
 }
-.content-wrapper {
-background-color: white;
-margin: 10px;
-border: 1px solid black;
-border-radius: 5px;
+
+.image-card img {
+  max-width: 100%;
 }
-.message-title {
-width: 100%;
-text-align: center;
-font-size: 24px;
-font-weight: bold;
-color: blue;
-}
-.fecha-title {
-width: 100%;
-text-align: center;
-font-size: 18px;
-font-weight: bold;
-color: black;
-}
+
 .metric {
-margin-top: 10px;
-border: 1px solid black;
-border-radius: 5px;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  color: #333;
+  width: 100%;
 }
+
 .metric-alcance {
-background-color: #FFDAB9;
+  background-color: #003366;
+  color: #fff;
 }
+
 .metric-impresiones {
-background-color: #ADD8E6;
+  background-color: #002147;
+  color: #fff;
 }
+
 .metric-reacciones {
-background-color: #98FB98;
+  background-color: #f5f5f5;
+  color: #ff9900;
 }
+
 .metric-linkclicks {
-background-color: #FFA07A;
+  background-color: #f5f5f5;
+  color: #109618;
 }
+
 .metric-comentarios {
-background-color: #FFC0CB;
+  background-color: #f5f5f5;
+  color: #990099;
 }
+
 .metric-shares {
-background-color: #F0E68C;
+  background-color: #f5f5f5;
+  color: #0099c6;
 }
-")),
-    fluidRow(
-      column(width = 12,
-             dateRangeInput("fecha", label = "Filtrar por fecha",
-                            start = min(Data_Frame_Final$Fecha),
-                            end = max(Data_Frame_Final$Fecha),
-                            format = "yyyy-mm-dd")
-      )
-    ),
-    uiOutput("dashboard")
-  ),
-  skin = "black"
+  '))
 )
+
 server <- function(input, output) {
-  output$dashboard <- renderUI({
-    fecha_filtrada <- Data_Frame_Final %>%
-      filter(Fecha >= input$fecha[1] & Fecha <= input$fecha[2])
-    lapply(1:4, function(i) {
-      fluidRow(
-        column(width = 4,
-               # Muestra la imagen del post
-               box(title = paste0("Fecha: ", fecha_filtrada$Fecha[i]), class = "fecha-title",
-                   img(src = fecha_filtrada$full_picture[i], width = "100%"))
-        ),
-        column(width = 8,
-               # Muestra las métricas del post en tarjetas
-               tags$div(class = "content-wrapper",
-                        box(title = paste0("", fecha_filtrada$message[i]), class = "message-title",
-                            tags$div(class = "row metric metric-alcance",
-                                     tags$div(class = "col-sm-4",
-                                              tags$h4("Alcance"),
-                                              tags$h2(format(fecha_filtrada$post_impressions_unique[i], big.mark = ","))
-                                     )
-                            ),
-                            tags$div(class = "row metric metric-impresiones",
-                                     tags$div(class = "col-sm-4",
-                                              tags$h4("Impresiones"),
-                                              tags$h2(format(fecha_filtrada$post_impressions[i], big.mark = ","))
-                                     )
-                            ),
-                            tags$div(class = "row metric metric-linkclicks",
-                                     tags$div(class = "col-sm-4",tags$h4("Link Clicks"),
-                                              tags$h2(format(fecha_filtrada$link_clicks[i], big.mark = ","))
-                                     )
-                            ),
-                            tags$div(class = "row metric metric-reacciones",
-                                     tags$div(class = "col-sm-4",
-                                              tags$h4("Reacciones"),
-                                              tags$h2(format(fecha_filtrada$Reacciones[i], big.mark = ","))
-                                     )
-                            ),
-                            tags$div(class = "row metric metric-comentarios",
-                                     tags$div(class = "col-sm-4",
-                                              tags$h4("Comentarios"),
-                                              tags$h2(format(fecha_filtrada$Comentarios[i], big.mark = ","))
-                                     )
-                            ),
-                            tags$div(class = "row metric metric-shares",
-                                     tags$div(class = "col-sm-4",
-                                              tags$h4("Shares"),
-                                              tags$h2(format(fecha_filtrada$Shares[i], big.mark = ","))
-                                     )
-                            )
-                        )
-               )
+  # Filter the data based on the selected date range
+  Data_Frame_Final_filtered <- reactive({
+    Data_Frame_Final[as.Date(Data_Frame_Final$Fecha) >= input$date[1] & as.Date(Data_Frame_Final$Fecha) <= input$date[2], ]
+  })
+
+  # Create the carousel with images and metrics
+  output$myCarousel <- renderSlickR({
+    slickR(
+      lapply(seq_along(Data_Frame_Final_filtered()$full_picture), function(i) {
+        img_tag <- tags$img(src = Data_Frame_Final_filtered()$full_picture[i], class = "img-fluid", style = "max-height: 500px;")
+        # Create the metrics for each image
+        alcance <- Data_Frame_Final_filtered()$post_impressions_unique[i]
+        impresiones <- Data_Frame_Final_filtered()$post_impressions[i]
+        reacciones <- Data_Frame_Final_filtered()$post_reactions_by_type_total[i]
+        linkclicks <- Data_Frame_Final_filtered()$link_clicks[i]
+        comentarios <- Data_Frame_Final_filtered()$post_comments[i]
+        shares <- Data_Frame_Final_filtered()$post_shares[i]
+
+        metric_tag <- tags$div(
+          class = "metric",
+          tags$div(paste0("Alcance: ", alcance), class = "metric-alcance"),
+          tags$div(paste0("Impresiones: ", impresiones), class = "metric-impresiones"),
+          tags$div(paste0("Reacciones: ", reacciones), class = "metric-reacciones"),
+          tags$div(paste0("Link Clicks: ", linkclicks), class = "metric-linkclicks"),
+          tags$div(paste0("Comentarios: ", comentarios), class = "metric-comentarios"),
+          tags$div(paste0("Shares: ", shares), class = "metric-shares")
         )
-      )
-    })
+
+        # Combine the image and metrics into an image card
+        tags$div(class = "image-card", img_tag, metric_tag)
+      })
+    )
   })
 }
 
-# Ejecutar la aplicación
 shinyApp(ui = ui, server = server)
